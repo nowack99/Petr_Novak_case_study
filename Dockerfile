@@ -4,11 +4,8 @@ WORKDIR /build
 
 RUN pip install uv
 
-COPY pyproject.toml .
-RUN uv pip install --system --no-cache -r pyproject.toml 2>/dev/null || true
-
 COPY . .
-RUN uv pip install --system --no-cache .
+RUN uv pip install --system --no-cache -e ".[dev]"
 
 
 FROM python:3.12-slim

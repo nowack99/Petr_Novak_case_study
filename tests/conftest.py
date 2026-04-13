@@ -1,4 +1,3 @@
-import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
@@ -31,7 +30,12 @@ async def session(engine):
 @pytest_asyncio.fixture
 async def client(session):
     async def override_get_db():
-        yield session
+        try:
+            yield session
+            await session.commit()
+        except Exception:
+            await session.rollback()
+            raise
 
     app.dependency_overrides[get_db] = override_get_db
 

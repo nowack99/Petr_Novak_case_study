@@ -1,4 +1,4 @@
-.PHONY: up down build restart logs shell migrate makemigration test lint fmt
+.PHONY: up down build restart logs shell migrate makemigration test lint lint-flake8 typecheck check fmt
 
 up:
 	docker compose up -d
@@ -28,7 +28,15 @@ test:
 	docker compose exec api pytest
 
 lint:
-	ruff check app tests
+	docker compose exec api ruff check app tests
+
+lint-flake8:
+	docker compose exec api flake8 app tests
+
+typecheck:
+	docker compose exec api mypy app tests
+
+check: lint lint-flake8 typecheck test
 
 fmt:
-	ruff format app tests
+	docker compose exec api ruff format app tests

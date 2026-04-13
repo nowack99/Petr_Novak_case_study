@@ -29,15 +29,21 @@ def upgrade() -> None:
     )
     op.create_index("ix_users_email", "users", ["email"], unique=True)
 
-    taskstatus = sa.Enum("todo", "in_progress", "done", name="taskstatus")
-    taskstatus.create(op.get_bind())
+    taskstatus = postgresql.ENUM(
+        "todo",
+        "in_progress",
+        "done",
+        name="taskstatus",
+        create_type=False,
+    )
+    taskstatus.create(op.get_bind(), checkfirst=True)
 
     op.create_table(
         "tasks",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True, server_default=sa.text("uuid_generate_v4()")),
         sa.Column("title", sa.String(500), nullable=False),
         sa.Column("description", sa.Text(), nullable=True),
-        sa.Column("status", sa.Enum("todo", "in_progress", "done", name="taskstatus"), nullable=False, server_default="todo"),
+        sa.Column("status", taskstatus, nullable=False, server_default="todo"),
         sa.Column("owner_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("users.id", ondelete="CASCADE"), nullable=False),
         sa.Column("assignee_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("users.id", ondelete="SET NULL"), nullable=True),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),

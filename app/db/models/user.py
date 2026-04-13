@@ -1,11 +1,17 @@
+from __future__ import annotations
+
 import uuid
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Boolean, DateTime, String, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
+
+if TYPE_CHECKING:
+    from app.db.models.task import TaskModel
 
 
 class UserModel(Base):
@@ -26,12 +32,12 @@ class UserModel(Base):
         nullable=False,
     )
 
-    owned_tasks: Mapped[list["TaskModel"]] = relationship(  # type: ignore[name-defined]
+    owned_tasks: Mapped[list[TaskModel]] = relationship(
         "TaskModel",
         foreign_keys="TaskModel.owner_id",
         back_populates="owner",
     )
-    assigned_tasks: Mapped[list["TaskModel"]] = relationship(  # type: ignore[name-defined]
+    assigned_tasks: Mapped[list[TaskModel]] = relationship(
         "TaskModel",
         foreign_keys="TaskModel.assignee_id",
         back_populates="assignee",

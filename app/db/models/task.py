@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 import uuid
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import DateTime, Enum, ForeignKey, String, Text, func
 from sqlalchemy.dialects.postgresql import UUID
@@ -7,6 +10,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
 from app.domain.task import TaskStatus
+
+if TYPE_CHECKING:
+    from app.db.models.user import UserModel
 
 
 class TaskModel(Base):
@@ -20,7 +26,11 @@ class TaskModel(Base):
     title: Mapped[str] = mapped_column(String(500), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     status: Mapped[TaskStatus] = mapped_column(
-        Enum(TaskStatus, name="taskstatus"),
+        Enum(
+            TaskStatus,
+            name="taskstatus",
+            values_callable=lambda enum_cls: [member.value for member in enum_cls],
+        ),
         nullable=False,
         default=TaskStatus.TODO,
         index=True,
@@ -49,12 +59,12 @@ class TaskModel(Base):
         nullable=False,
     )
 
-    owner: Mapped["UserModel"] = relationship(  # type: ignore[name-defined]
+    owner: Mapped[UserModel] = relationship(
         "UserModel",
         foreign_keys=[owner_id],
         back_populates="owned_tasks",
     )
-    assignee: Mapped["UserModel | None"] = relationship(  # type: ignore[name-defined]
+    assignee: Mapped[UserModel | None] = relationship(
         "UserModel",
         foreign_keys=[assignee_id],
         back_populates="assigned_tasks",

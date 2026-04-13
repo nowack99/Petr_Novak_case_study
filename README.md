@@ -46,6 +46,19 @@ Schemas        app/schemas/        Pydantic v2 — API boundary only
 **Rule:** dependencies flow downward only. Services never import FastAPI.
 Routes never import SQLAlchemy. The domain layer imports nothing from other layers.
 
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for the repo-level design rules and quality gates.
+
+---
+
+## Engineering Principles
+
+- Domain-driven design over framework-driven code
+- Simple functions and explicit types over clever abstractions
+- Business rules live in domain objects and services
+- Repositories map persistence only
+- Unit tests for domain logic, integration tests for HTTP flows
+- Every change should stay compatible with `ruff`, `flake8`, `mypy`, and `pytest`
+
 ---
 
 ## What is Pre-built (reference implementations)
@@ -117,7 +130,7 @@ Routes never import SQLAlchemy. The domain layer imports nothing from other laye
 ## Running Tests
 
 ```bash
-# Install dev dependencies
+# Install dev dependencies locally
 pip install -e ".[dev]"
 
 # Run all tests
@@ -129,3 +142,16 @@ pytest tests/test_domain.py
 # With coverage
 pytest --cov=app --cov-report=term-missing
 ```
+
+## Quality Checks
+
+```bash
+# Inside Docker
+make lint
+make lint-flake8
+make typecheck
+make test
+make check
+```
+
+`make check` runs the full quality gate: `ruff`, `flake8`, `mypy`, and `pytest`.

@@ -20,7 +20,7 @@ async def create_user(
     service: UserService = Depends(get_user_service),
 ) -> UserRead:
     user = await service.create_user(data)
-    return UserRead.model_validate(user)
+    return UserRead.from_domain(user)
 
 
 @router.get("/{user_id}", response_model=UserRead)
@@ -29,4 +29,4 @@ async def get_user(
     service: UserService = Depends(get_user_service),
 ) -> UserRead:
     user = await service.get_user(user_id)
-    return UserRead.model_validate(user)
+    return UserRead.from_domain(user)

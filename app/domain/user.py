@@ -1,11 +1,12 @@
 from dataclasses import dataclass
 from datetime import datetime
-from uuid import UUID
+
+from app.domain.ids import UserId
 
 
 @dataclass(frozen=True)
 class User:
-    id: UUID
+    id: UserId
     email: str
     full_name: str
     is_active: bool

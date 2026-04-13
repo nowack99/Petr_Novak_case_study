@@ -2,6 +2,7 @@ from sqlalchemy import select
 
 from app.db.models.user import UserModel
 from app.db.repositories.base import BaseRepository
+from app.domain.ids import UserId
 from app.domain.user import User
 
 
@@ -17,7 +18,7 @@ class UserRepository(BaseRepository[UserModel, User]):
 
     def _to_domain(self, model: UserModel) -> User:
         return User(
-            id=model.id,
+            id=UserId(model.id),
             email=model.email,
             full_name=model.full_name,
             is_active=model.is_active,
@@ -26,7 +27,7 @@ class UserRepository(BaseRepository[UserModel, User]):
 
     def _to_model(self, domain: User) -> UserModel:
         return UserModel(
-            id=domain.id,
+            id=domain.id.value,
             email=domain.email,
             full_name=domain.full_name,
             is_active=domain.is_active,
@@ -38,7 +39,7 @@ class UserRepository(BaseRepository[UserModel, User]):
 
     async def save_with_password(self, domain: User, hashed_password: str) -> User:
         model = UserModel(
-            id=domain.id,
+            id=domain.id.value,
             email=domain.email,
             full_name=domain.full_name,
             is_active=domain.is_active,

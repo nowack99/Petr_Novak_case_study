@@ -1,14 +1,15 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from fastapi import HTTPException, status
 from passlib.context import CryptContext
 
 from app.db.repositories.user_repository import UserRepository
+from app.domain.ids import UserId
 from app.domain.user import User
 from app.schemas.user import UserCreate
 
-_pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+_pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
 
 class UserService:
@@ -16,19 +17,20 @@ class UserService:
         self._repo = repository
 
     async def create_user(self, data: UserCreate) -> User:
-        existing = await self._repo.get_by_email(data.email)
+        normalized_email = self._normalize_email(data.email)
+        existing = await self._repo.get_by_email(normalized_email)
         if existing is not None:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail=f"User with email '{data.email}' already exists.",
+                detail=f"User with email '{normalized_email}' already exists.",
             )
 
         hashed_password = _pwd_context.hash(data.password)
-        now = datetime.now(tz=timezone.utc)
+        now = datetime.now(tz=UTC)
 
         user = User(
-            id=uuid.uuid4(),
-            email=data.email,
+            id=UserId.new(),
+            email=normalized_email,
             full_name=data.full_name,
             is_active=True,
             created_at=now,
@@ -44,3 +46,7 @@ class UserService:
                 detail=f"User '{user_id}' not found.",
             )
         return user
+
+    @staticmethod
+    def _normalize_email(email: str) -> str:
+        return email.strip().lower()

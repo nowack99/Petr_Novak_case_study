@@ -1,5 +1,4 @@
 from abc import abstractmethod
-from typing import Generic, TypeVar
 from uuid import UUID
 
 from sqlalchemy import select
@@ -7,11 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.base import Base
 
-ModelT = TypeVar("ModelT", bound=Base)
-DomainT = TypeVar("DomainT")
 
-
-class BaseRepository(Generic[ModelT, DomainT]):
+class BaseRepository[ModelT: Base, DomainT]:
     model_class: type[ModelT]
 
     def __init__(self, session: AsyncSession) -> None:
